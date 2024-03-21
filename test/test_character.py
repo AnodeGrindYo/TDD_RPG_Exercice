@@ -29,3 +29,10 @@ def test_character_is_alive_false():
     c = Character()
     c.get_damage(100)
     assert c.is_alive == False
+
+# teste si le character inflige des dégâts à un autre character
+def test_character_deal_damage():
+    c1 = Character()
+    c2 = Character()
+    c1.deal_damage(c2, 10)
+    assert c2.hp == 90
