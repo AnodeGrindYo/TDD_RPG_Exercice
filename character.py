@@ -5,4 +5,5 @@ class Character:
 
     def get_damage(self, damage):
         self.hp -= damage
-        
+        if self.hp <= 0:
+            self.is_alive = False

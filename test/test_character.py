@@ -15,3 +15,9 @@ def test_character_get_damage():
     c = Character()
     c.get_damage(10)
     assert c.hp == 90
+
+# teste si le character meurt quand ses hp sont à 0
+def test_character_is_alive_false():
+    c = Character()
+    c.get_damage(100)
+    assert c.is_alive == False
