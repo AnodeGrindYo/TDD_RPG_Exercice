@@ -1,4 +1,4 @@
-from character import Character
+from character import Character, HealingItem
 
 # teste si le character a 100 hp à sa création
 def test_character_hp():
@@ -63,3 +63,24 @@ def test_character_heal_negative():
 def test_character_name():
     c = Character("salma")
     assert c.name == "salma"
+
+# teste si le character peut boire une potion (HealingItem)
+def test_character_drinks_potion():
+    c = Character("salma")
+    c.get_damage(50)
+    c.drink_potion(HealingItem.POTION)
+    assert c.hp == 75
+
+# test si le character peut boire une super potion
+def test_character_drinks_super_potion():
+    c = Character("salma")
+    c.get_damage(50)
+    c.drink_potion(HealingItem.SUPER_POTION)
+    assert c.hp == 100
+
+# test si le character peut boire une hyper potion (et si sa vie après ne dépasse pas 100)
+def test_character_drinks_hyper_potion():
+    c = Character("salma")
+    c.get_damage(50)
+    c.drink_potion(HealingItem.HYPER_POTION)
+    assert c.hp == 100

@@ -1,3 +1,10 @@
+from enum import Enum
+
+class HealingItem(Enum):
+    POTION = 25
+    SUPER_POTION = 50
+    HYPER_POTION = 100
+
 class Character:
     def __init__(self, name):
         self.hp = 100
@@ -27,3 +34,14 @@ class Character:
             self.hp = self.max_hp
         else:
             self.hp += heal
+
+    # boire une potion (vérifier le type de potion et soigner le character en conséquence)
+    def drink_potion(self, potion):
+        if potion == HealingItem.POTION:
+            self.heal(25)
+        elif potion == HealingItem.SUPER_POTION:
+            self.heal(50)
+        elif potion == HealingItem.HYPER_POTION:
+            self.heal(100)
+        else:
+            raise ValueError("Invalid potion type")
