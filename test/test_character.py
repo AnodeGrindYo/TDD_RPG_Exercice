@@ -36,3 +36,17 @@ def test_character_deal_damage():
     c2 = Character()
     c1.deal_damage(c2, 10)
     assert c2.hp == 90
+
+# teste si le character peut se soigner
+def test_character_heal():
+    c = Character()
+    c.get_damage(10)
+    c.heal(10)
+    assert c.hp == 100
+
+# teste si le character ne peut pas avoir plus de hp que son max_hp
+def test_character_heal_max_hp():
+    c = Character()
+    c.get_damage(10)
+    c.heal(100)
+    assert c.hp == 100
