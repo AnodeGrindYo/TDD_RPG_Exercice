@@ -58,3 +58,8 @@ def test_character_heal_negative():
         c.heal(-10)
     except ValueError as e:
         assert str(e) == "heal should be positive"
+
+# teste si le character a un nom
+def test_character_name():
+    c = Character("salma")
+    assert c.name == "salma"
