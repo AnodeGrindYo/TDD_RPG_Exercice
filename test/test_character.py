@@ -16,6 +16,14 @@ def test_character_get_damage():
     c.get_damage(10)
     assert c.hp == 90
 
+# vérifie si le character peut avoir des dégats négatifs (ne devrait pas)
+def test_character_get_damage_negative():
+    c = Character()
+    try:
+        c.get_damage(-10)
+    except ValueError as e:
+        assert str(e) == "damage should be positive"
+
 # teste si le character meurt quand ses hp sont à 0
 def test_character_is_alive_false():
     c = Character()
