@@ -1,8 +1,9 @@
 class Character:
-    def __init__(self):
+    def __init__(self, name):
         self.hp = 100
         self.is_alive = True
         self.max_hp = 100
+        self.name = name
 
     # recevoir des dégats
     def get_damage(self, damage):
@@ -19,6 +20,9 @@ class Character:
 
     # se soigner
     def heal(self, heal):
+        # vérifie que heal est positif (pas de soin négatif)
+        if heal < 0:
+            raise ValueError("heal should be positive")
         if self.hp + heal > self.max_hp:
             self.hp = self.max_hp
         else:
