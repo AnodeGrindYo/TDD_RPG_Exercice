@@ -1,3 +1,4 @@
+from typing import ByteString
 from character import Character, HealingItem
 
 # teste si le character a 100 hp à sa création
@@ -84,3 +85,19 @@ def test_character_drinks_hyper_potion():
     c.get_damage(50)
     c.drink_potion(HealingItem.HYPER_POTION)
     assert c.hp == 100
+
+
+# 
+def test_put_potion_into_inventory_valid():
+    c = Character("salma")
+    c.put_potion_into_inventory(HealingItem.POTION)
+    assert HealingItem.POTION in c.inventory
+
+
+    # test adding an invalid potion to the inventory raises ValueError
+def test_put_potion_into_inventory_invalid():
+    c = Character("salma")
+    try:
+        c.put_potion_into_inventory("potion")
+    except ValueError as e: 
+         assert str(e) == "Invalid potion type"
