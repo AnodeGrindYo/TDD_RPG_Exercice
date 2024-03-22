@@ -1,85 +1,43 @@
-# Nom du workflow, apparaît dans l'onglet Actions de GitHub
-name: Test et Merge Automatique
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-# Déclencheurs du workflow: exécuté sur les pushs dans la branche 'dev'
+name: Python application
+
 on:
   push:
-    branches:
-      - dev
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
-# Jobs à exécuter
+permissions:
+  contents: read
+
 jobs:
-  # Job pour construire et tester l'application
-  build-and-test:
-    # Indique sur quel système d'exploitation le job doit être exécuté
+  build:
+
     runs-on: ubuntu-latest
-    
-    # Les étapes que le job doit exécuter
+
     steps:
-    # Étape 1: Vérifie le code source de la branche actuelle
-    - uses: actions/checkout@v2
-    
-    # Étape 2: Configure l'environnement Python
-    - name: Mise en place de Python
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
       with:
-        python-version: '3.8'
-    
-    # Étape 3: Installe les dépendances du projet
-    - name: Installation des dépendances
+        python-version: "3.10"
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    # Étape 4: Exécute les tests avec pytest
-    - name: Test avec pytest
+        pip install pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Test with pytest
       run: |
         pytest
-
-  # Job pour merger le code dans 'main' ou 'failure' en fonction du résultat des tests
-  merge-to-main-or-failure:
-    # Ce job doit attendre la fin du job 'build-and-test'
-    needs: build-and-test
-    # S'exécute sur la dernière version d'Ubuntu
-    runs-on: ubuntu-latest
-    # S'exécute toujours, peu importe le résultat du job précédent
-    if: always()
-    steps:
-      # Étape 1: Vérifie le code source de la branche 'dev'
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: dev
-      
-      # Étape 2: Décide si le code doit être mergé dans 'main' ou 'failure'
-      - name: Merge vers main ou failure
-        uses: actions/github-script@v3
-        with:
-          script: |
-            const github = require('@actions/github');
-            const core = require('@actions/core');
-            try {
-              // Vérifie le résultat du job 'build-and-test'
-              if (${jobs.build-and-test.outcome} == 'success') {
-                // Si les tests réussissent, merge 'dev' dans 'main'
-                await github.rest.repos.merge({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  base: 'main',
-                  head: 'dev',
-                });
-                console.log('Merge dans main réussi');
-              } else {
-                // Si les tests échouent, merge 'dev' dans 'failure'
-                await github.rest.repos.merge({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  base: 'failure',
-                  head: 'dev',
-                });
-                console.log('Merge dans failure réussi');
-              }
-            } catch (error) {
-              // En cas d'erreur lors du merge, échoue le job avec un message d'erreur
-              core.setFailed(`L'action a échoué avec l'erreur ${error}`);
-            }
+    - name: Merge to main if tests pass
+      run: |
+        git checkout main
+        git merge $GITHUB_SHA
+        git push
+    - name: Merge to failure if tests fail
+      run: |
+        git checkout failure
+        git merge $GITHUB_SHA
+        git push

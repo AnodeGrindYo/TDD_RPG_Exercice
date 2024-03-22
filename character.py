@@ -1,9 +1,12 @@
 from enum import Enum
 
+
+
 class HealingItem(Enum):
     POTION = 25
     SUPER_POTION = 50
     HYPER_POTION = 100
+
 
 class Character:
     def __init__(self, name):
@@ -11,6 +14,7 @@ class Character:
         self.is_alive = True
         self.max_hp = 100
         self.name = name
+        self.inventory = []
 
     # recevoir des dégats
     def get_damage(self, damage):
