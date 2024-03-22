@@ -58,7 +58,7 @@ jobs:
           git push origin failure/$unique_branch_suffix
           
           git checkout dev
-          git reset --hard HEAD~1
+          git reset --soft HEAD~1
           git push origin dev --force
           # envoie un message à un canal Discord pour informer de la réinitialisation de la branche dev
           curl -H 'Content-type: application/json' -d '{"username":"bot","content":"The dev branch has been reset."}' ${{ secrets.DISCORD_WEBHOOK }}

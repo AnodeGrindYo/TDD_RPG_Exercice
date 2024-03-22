@@ -81,6 +81,6 @@ def test_character_drinks_super_potion():
 # test si le character peut boire une hyper potion (et si sa vie après ne dépasse pas 100)
 def test_character_drinks_hyper_potion():
     c = Character("salma")
-    c.get_damage(60)
+    c.get_damage(50)
     c.drink_potion(HealingItem.HYPER_POTION)
-    assert c.hp == 0 # test d'échec des tests
+    assert c.hp == 150
