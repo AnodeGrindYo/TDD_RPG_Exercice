@@ -28,31 +28,19 @@ jobs:
         id: pytest
         run: |
           pytest
-          # envoie un message à discord pour informer si les tests ont réussi ou échoué
-          if [ $? -eq 0 ]; then
-            curl -H 'Content-type: application/json' -d '{"username":"bot","content":"The tests have passed."}' ${{ secrets.DISCORD_WEBHOOK }}
-          else
-            curl -H 'Content-type: application/json' -d '{"username":"bot","content":"The tests have failed."}' ${{ secrets.DISCORD_WEBHOOK }}
-          fi
         continue-on-error: true # Permet au workflow de continuer même si cette étape échoue
 
-      - name: Fast-forward dev onto main if tests pass
-        if: success() && steps.pytest.outputs.run == 'success'
+      - name: test_ok
+        if: success()
         run: |
-          # envoie un message à discord pour informer que les tests ont réussi, avec le numéro de commit
-          curl -H 'Content-type: application/json' -d '{"username":"bot","content":"The tests have passed."}' ${{ secrets.DISCORD_WEBHOOK }}
           git fetch
           git checkout main
           git merge --ff-only origin/dev
           git push origin main
-          # envoie un message à un canal Discord pour informer de la mise à jour
-          curl -H 'Content-type: application/json' -d '{"username":"bot","content":"The dev branch has been fast-forwarded onto main"}' ${{ secrets.DISCORD_WEBHOOK }}
-
-      - name: Create failure branch and reset dev if tests fail
-        if: failure() && steps.pytest.outputs.run != 'success'
+          
+      - name: test_ko
+        if: failure()
         run: |
-          # envoie un message à discord pour informer que les tests ont échoué, avec le numéro de commit
-          curl -H 'Content-type: application/json' -d '{"username":"bot","content":"The tests have failed."}' ${{ secrets.DISCORD_WEBHOOK }}
           unique_branch_suffix=$(date +%s)
           git checkout -b failure/$unique_branch_suffix
           git push origin failure/$unique_branch_suffix
@@ -60,5 +48,3 @@ jobs:
           git checkout dev
           git reset --soft HEAD~1
           git push origin dev --force
-          # envoie un message à un canal Discord pour informer de la réinitialisation de la branche dev
-          curl -H 'Content-type: application/json' -d '{"username":"bot","content":"The dev branch has been reset."}' ${{ secrets.DISCORD_WEBHOOK }}
