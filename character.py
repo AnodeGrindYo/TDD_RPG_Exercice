@@ -16,6 +16,7 @@ class Character:
         self.max_hp = 100
         self.name = name
         self.inventory = []
+        self.max_inventory_size = 5
 
 
     # recevoir des dégats

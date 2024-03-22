@@ -112,6 +112,16 @@ def test_put_potion_into_inventory_multiple():
     assert HealingItem.SUPER_POTION in c.inventory
     assert HealingItem.HYPER_POTION in c.inventory
 
+# teste si le character peut ajouter plus de potions que la taille maximale de son inventaire
+def test_put_potion_into_inventory_full():
+    c = Character("salma")
+    for i in range(5):
+        c.put_potion_into_inventory(HealingItem.POTION)
+    try:
+        c.put_potion_into_inventory(HealingItem.HYPER_POTION)
+    except ValueError as e:
+        assert str(e) == "Inventory is full"
+
 # teste si le character peut enlever une potion de son inventaire
 def test_remove_potion_from_inventory():
     c = Character("salma")
