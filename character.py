@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import ByteString
 
 
 
@@ -10,12 +11,13 @@ class HealingItem(Enum):
 
 class Character:
     def __init__(self, name):
-        return
+       
         self.hp = 100
         self.is_alive = True
         self.max_hp = 100
         self.name = name
         self.inventory = []
+
 
     # recevoir des dégats
     def get_damage(self, damage):
@@ -50,3 +52,13 @@ class Character:
             self.heal(100)
         else:
             raise ValueError("Invalid potion type")
+        
+ #
+    def put_potion_into_inventory(self, potion):
+       if type(potion) != HealingItem:
+         raise ValueError("Invalid potion type")
+       self.inventory.append(potion)
+
+
+
+
