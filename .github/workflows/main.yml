@@ -1,85 +1,73 @@
-# Nom du workflow, apparaît dans l'onglet Actions de GitHub
 name: Test et Merge Automatique
 
-# Déclencheurs du workflow: exécuté sur les pushs dans la branche 'dev'
 on:
   push:
     branches:
       - dev
 
-# Jobs à exécuter
 jobs:
-  # Job pour construire et tester l'application
   build-and-test:
-    # Indique sur quel système d'exploitation le job doit être exécuté
     runs-on: ubuntu-latest
-    
-    # Les étapes que le job doit exécuter
+    outputs:
+      outcome: ${{ steps.test_outcome.outputs.outcome }}
     steps:
-    # Étape 1: Vérifie le code source de la branche actuelle
-    - uses: actions/checkout@v2
-    
-    # Étape 2: Configure l'environnement Python
-    - name: Mise en place de Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-    
-    # Étape 3: Installe les dépendances du projet
-    - name: Installation des dépendances
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    # Étape 4: Exécute les tests avec pytest
-    - name: Test avec pytest
-      run: |
-        pytest
+      - uses: actions/checkout@v2
+      
+      - name: Mise en place de Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      
+      - name: Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Test avec pytest
+        id: test_outcome
+        run: pytest && echo "::set-output name=outcome::success" || echo "::set-output name=outcome::failure"
 
-  # Job pour merger le code dans 'main' ou 'failure' en fonction du résultat des tests
   merge-to-main-or-failure:
-    # Ce job doit attendre la fin du job 'build-and-test'
     needs: build-and-test
-    # S'exécute sur la dernière version d'Ubuntu
     runs-on: ubuntu-latest
-    # S'exécute toujours, peu importe le résultat du job précédent
     if: always()
     steps:
-      # Étape 1: Vérifie le code source de la branche 'dev'
       - name: Checkout
         uses: actions/checkout@v2
         with:
           ref: dev
+          fetch-depth: 0
       
-      # Étape 2: Décide si le code doit être mergé dans 'main' ou 'failure'
+      - name: Setup Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+      
       - name: Merge vers main ou failure
         uses: actions/github-script@v3
         with:
           script: |
-            const github = require('@actions/github');
-            const core = require('@actions/core');
-            try {
-              // Vérifie le résultat du job 'build-and-test'
-              if (${jobs.build-and-test.outcome} == 'success') {
-                // Si les tests réussissent, merge 'dev' dans 'main'
-                await github.rest.repos.merge({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  base: 'main',
-                  head: 'dev',
-                });
-                console.log('Merge dans main réussi');
-              } else {
-                // Si les tests échouent, merge 'dev' dans 'failure'
-                await github.rest.repos.merge({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  base: 'failure',
-                  head: 'dev',
-                });
-                console.log('Merge dans failure réussi');
-              }
-            } catch (error) {
-              // En cas d'erreur lors du merge, échoue le job avec un message d'erreur
-              core.setFailed(`L'action a échoué avec l'erreur ${error}`);
+            const outcome = '${{ needs.build-and-test.outputs.outcome }}';
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            if (outcome === 'success') {
+              // Si les tests réussissent, merge 'dev' dans 'main'
+              await github.rest.repos.merge({
+                owner,
+                repo,
+                base: 'main',
+                head: 'dev',
+                commit_message: 'Automated merge of dev into main'
+              });
+              console.log('Merge into main was successful');
+            } else {
+              const failureBranch = 'failure-' + new Date().toISOString();
+              // Si les tests échouent, créez une nouvelle branche failure
+              await github.rest.git.createRef({
+                owner,
+                repo,
+                ref: 'refs/heads/' + failureBranch,
+                sha: context.sha
+              });
+              console.log(`Created failure branch: ${failureBranch}`);
             }
