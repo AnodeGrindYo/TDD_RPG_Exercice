@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import ByteString
 
 
 
@@ -15,6 +16,7 @@ class Character:
         self.max_hp = 100
         self.name = name
         self.inventory = []
+
 
     # recevoir des dégats
     def get_damage(self, damage):
@@ -49,3 +51,20 @@ class Character:
             self.heal(100)
         else:
             raise ValueError("Invalid potion type")
+        
+    # Ajoute une potion à l'inventaire du character
+    def put_potion_into_inventory(self, potion):
+       if type(potion) != HealingItem:
+         raise ValueError("Invalid potion type")
+       self.inventory.append(potion)
+
+    # enlever une potion de l'inventaire du character
+    def remove_potion_from_inventory(self, potion):
+        if type(potion) != HealingItem:
+            raise ValueError("Invalid potion type")
+        if potion not in self.inventory:
+            raise ValueError("Potion not in inventory")
+        self.inventory.remove(potion)
+
+
+

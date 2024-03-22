@@ -1,3 +1,4 @@
+from typing import ByteString
 from character import Character, HealingItem
 
 # teste si le character a 100 hp à sa création
@@ -84,3 +85,36 @@ def test_character_drinks_hyper_potion():
     c.get_damage(50)
     c.drink_potion(HealingItem.HYPER_POTION)
     assert c.hp == 100
+
+
+# teste si le character peut ajouter une potion à son inventaire
+def test_put_potion_into_inventory_valid():
+    c = Character("salma")
+    c.put_potion_into_inventory(HealingItem.POTION)
+    assert HealingItem.POTION in c.inventory
+
+
+# teste si le character ne peut pas ajouter une potion invalide à son inventaire
+def test_put_potion_into_inventory_invalid():
+    c = Character("salma")
+    try:
+        c.put_potion_into_inventory("potion")
+    except ValueError as e: 
+         assert str(e) == "Invalid potion type"
+
+# teste si le character peut ajouter plusieurs potions à son inventaire
+def test_put_potion_into_inventory_multiple():
+    c = Character("salma")
+    c.put_potion_into_inventory(HealingItem.POTION)
+    c.put_potion_into_inventory(HealingItem.SUPER_POTION)
+    c.put_potion_into_inventory(HealingItem.HYPER_POTION)
+    assert HealingItem.POTION in c.inventory
+    assert HealingItem.SUPER_POTION in c.inventory
+    assert HealingItem.HYPER_POTION in c.inventory
+
+# teste si le character peut enlever une potion de son inventaire
+def test_remove_potion_from_inventory():
+    c = Character("salma")
+    c.put_potion_into_inventory(HealingItem.POTION)
+    c.remove_potion_from_inventory(HealingItem.POTION)
+    assert HealingItem.POTION not in c.inventory
