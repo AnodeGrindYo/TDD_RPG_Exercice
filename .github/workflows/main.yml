@@ -57,8 +57,11 @@ jobs:
         with:
           script: |
             try {
+              // Utiliser 'steps' et non 'jobs' pour accéder au résultat
+              const outcome = steps.build-and-test.outcome;
+
               // Vérifie le résultat du job 'build-and-test'
-              if (${jobs.build-and-test.outcome} == 'success') {
+              if (outcome == 'success') {
                 // Si les tests réussissent, merge 'dev' dans 'main'
                 await github.rest.repos.merge({
                   owner: context.repo.owner,
@@ -79,5 +82,7 @@ jobs:
               }
             } catch (error) {
               // En cas d'erreur lors du merge, échoue le job avec un message d'erreur
-              core.setFailed(`L'action a échoué avec l'erreur ${error}`);
+              console.error('L\'action a échoué avec l\'erreur', error);
+              // Utilise 'setFailed' pour signaler l'échec du step
+              core.setFailed(error.message);
             }
