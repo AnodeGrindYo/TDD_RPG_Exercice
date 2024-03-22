@@ -9,48 +9,59 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     outputs:
-      result: ${{ steps.test_outcome.outputs.result }} # On définit un output pour le job
+      # On va utiliser le statut de la sortie pour déterminer l'action dans le job suivant
+      test-success: ${{ job.status == 'success' }}
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
     
-    - name: Mise en place de Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
+      - name: Mise en place de Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
     
-    - name: Installation des dépendances
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
     
-    - name: Test avec pytest
-      id: test_outcome # On définit un ID pour cette étape afin de pouvoir y faire référence
-      run: |
-        pytest
-        echo "::set-output name=result::${{ job.status == 'success' && 'success' || 'failure' }}" # On définit l'output en fonction du succès des tests
+      - name: Test avec pytest
+        run: pytest
 
   merge-to-main-or-failure:
-    needs: build-and-test
     runs-on: ubuntu-latest
-    if: always() # Ce job s'exécute indépendamment du résultat du job build-and-test
+    needs: build-and-test # Ce job a besoin du résultat de build-and-test
+    if: always() # Ce job s'exécute toujours, indépendamment du résultat de build-and-test
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        ref: dev
-    
-    - name: Merge vers main ou failure
-      uses: actions/github-script@v3
-      with:
-        script: |
-          const result = ${{ needs.build-and-test.outputs.result }}; // On récupère l'output du job précédent
-          const branch = (result === 'success') ? 'main' : 'failure'; // On détermine la branche cible
-          
-          await github.rest.repos.merge({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            base: branch,
-            head: 'dev',
-          });
-          console.log(`Merge dans ${branch} réussi.`);
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: dev
+      
+      - name: Merge vers main ou failure
+        uses: actions/github-script@v3
+        if: always() # Ce step s'exécute toujours
+        with:
+          script: |
+            const testSuccess = ${{ needs.build-and-test.outputs.test-success }};
+            
+            if (testSuccess == 'true') {
+              // Si les tests ont réussi, fusionner vers main
+              await github.rest.repos.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                base: 'main',
+                head: 'dev'
+              });
+              console.log('Les tests ont réussi. Merge vers main effectué.');
+            } else {
+              // Si les tests ont échoué, fusionner vers failure
+              await github.rest.repos.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                base: 'failure',
+                head: 'dev'
+              });
+              console.log('Les tests ont échoué. Merge vers failure effectué.');
+            }
