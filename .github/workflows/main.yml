@@ -1,43 +1,55 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# description du workflow :
+# - on push sur la branche dev uniquement
+# - le workflow est déclenché
+# - on installe les dépendances
+# - on lance les tests
+# - si les tests passent, on fast-forward dev onto main
+# - on push main sur le repo
+# - si les tests ne passent pas, create branche failure/<n° unique>
+# - on push failure/<n° unique> sur le repo
+# - git reset dev HEAD~1
+# - on push dev sur le repo
 
-name: Python application
+name: Ouais
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
+    branches:
+      - dev
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
+    - uses: actions/checkout@v2
+
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Test with pytest
-      run: |
-        pytest
-    - name: Merge to main if tests pass
+      run: npm install
+
+    - name: Run tests
+      run: npm test
+
+    - name: Fast-forward dev onto main
       run: |
         git checkout main
-        git merge $GITHUB_SHA
+        git pull
+        git merge dev
         git push
-    - name: Merge to failure if tests fail
+
+    - name: Push main on repo
       run: |
-        git checkout failure
-        git merge $GITHUB_SHA
         git push
+
+    - name: Create failure branch
+      run: |
+        git checkout -b failure/$(date +%s)
+        git push
+
+    - name: Reset dev
+      run: |
+        git checkout dev
+        git reset HEAD~1
+        git push
+
+
