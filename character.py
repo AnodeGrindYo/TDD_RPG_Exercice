@@ -9,8 +9,7 @@ class HealingItem(Enum):
 
 
 class Character:
-    def __init__(self, name): # ouais
-        return
+    def __init__(self, name):
         self.hp = 100
         self.is_alive = True
         self.max_hp = 100
