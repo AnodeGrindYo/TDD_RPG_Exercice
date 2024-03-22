@@ -2,6 +2,10 @@
 
 Lorsque les tests automatisés échouent dans la branche `dev`, le workflow GitHub Actions merge automatiquement le code dans la branche `failure`. Pour récupérer cette branche, apporter des corrections et les repousser sur `dev`, suivez les étapes ci-dessous :
 
+### Étape 0 : Boire un shooter
+
+:beers:
+
 ### Étape 1 : Récupération de la branche `failure`
 ```bash
 # Assurez-vous d'être sur votre branche locale `dev`
