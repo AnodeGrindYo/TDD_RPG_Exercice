@@ -27,11 +27,10 @@ jobs:
       - name: Run tests with pytest
         id: pytest
         run: |
-          pytest; echo "::set-output name=status::$?"  # Capture the exit code of pytest
-        continue-on-error: true # Permet au workflow de continuer même si cette étape échoue
+          pytest
 
       - name: test_ok
-        if: steps.pytest.outputs.status == '0'
+        if: success()
         run: |
           git fetch
           git checkout main
@@ -39,7 +38,7 @@ jobs:
           git push origin main
           
       - name: test_ko
-        if: steps.pytest.outputs.status != '0'
+        if: failure()
         run: |
           unique_branch_suffix=$(date +%s)
           git checkout -b failure/$unique_branch_suffix
