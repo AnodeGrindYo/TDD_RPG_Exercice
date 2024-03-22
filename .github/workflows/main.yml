@@ -57,8 +57,10 @@ jobs:
         with:
           script: |
             try {
+              // Récupère l'état du job précédent
+              const buildAndTestJob = context.workflow.jobs.find(job => job.name === 'build-and-test');
               // Vérifie le résultat du job 'build-and-test'
-              if (needs.build-and-test.result == 'success') {
+              if (buildAndTestJob.conclusion === 'success') {
                 // Si les tests réussissent, merge 'dev' dans 'main'
                 await github.rest.repos.merge({
                   owner: context.repo.owner,
