@@ -56,8 +56,6 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: |
-            const github = require('@actions/github');
-            const core = require('@actions/core');
             try {
               // Vérifie le résultat du job 'build-and-test'
               if (${jobs.build-and-test.outcome} == 'success') {
