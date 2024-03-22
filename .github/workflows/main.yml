@@ -56,19 +56,17 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: |
+            const buildAndTestJob = require('actions/github-script@v3');
             try {
-              // Récupère l'état du job précédent
-              const buildAndTestJob = context.workflow.jobs.find(job => job.name === 'build-and-test');
-              // Vérifie le résultat du job 'build-and-test'
-              if (buildAndTestJob.conclusion === 'success') {
-                // Si les tests réussissent, merge 'dev' dans 'main'
+              if (buildAndTestJob === 'success') {
+                // Si les tests passaient, merge 'dev' dans 'main'
                 await github.rest.repos.merge({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   base: 'main',
                   head: 'dev',
                 });
-                console.log('Merge dans main réussi');
+                console.log('Merge into main succeeded');
               } else {
                 // Si les tests échouent, merge 'dev' dans 'failure'
                 await github.rest.repos.merge({
@@ -77,11 +75,9 @@ jobs:
                   base: 'failure',
                   head: 'dev',
                 });
-                console.log('Merge dans failure réussi');
+                console.log('Merge into failure succeeded');
               }
             } catch (error) {
-              // En cas d'erreur lors du merge, échoue le job avec un message d'erreur
-              console.log('L\'action a échoué avec l\'erreur', error);
-              // Utilise 'setFailed' pour signaler l'échec du step
+              console.log('Action failed with error', error);
               core.setFailed(error.message);
             }
