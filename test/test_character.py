@@ -83,4 +83,4 @@ def test_character_drinks_hyper_potion():
     c = Character("salma")
     c.get_damage(50)
     c.drink_potion(HealingItem.HYPER_POTION)
-    assert c.hp == 150
+    assert c.hp == 100
