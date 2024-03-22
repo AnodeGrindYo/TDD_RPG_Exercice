@@ -14,11 +14,8 @@ git checkout dev
 # Récupérez les derniers changements du dépôt, y compris la branche `failure`
 git fetch origin
 
-# Basculez sur la branche `failure`
-git checkout failure
-
-# Créez une nouvelle branche pour travailler sur les corrections
-git checkout -b fix-failure
+# Fusionnez les changements de la branche `failure` dans `dev`
+git merge origin/failure
 ```
 
 ### Étape 2 : Identification et Correction des Problèmes
@@ -52,18 +49,9 @@ git commit -m "Corrections des erreurs blablabla"
 - Poussez la branche de corrections sur GitHub
 
 ```bash
-git push origin fix-failure
+git push origin dev
 ```
 
-### Étape 5 : Créez une Pull Request pour fix-failure vers dev
-
-- Allez sur la page GitHub de votre dépôt.
-- Cliquez sur l'onglet "Pull requests".
-- Cliquez sur "New pull request".
-- Sélectionnez dev comme branche de base et fix-failure - comme branche à comparer.
-- Cliquez sur "Create pull request".
-- Ajoutez un titre et une description expliquant les corrections.
-- Soumettez la Pull Request pour révision.
 
 ### Étape 6 : Fusionnez fix-failure dans dev
 
