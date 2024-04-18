@@ -128,3 +128,11 @@ def test_remove_potion_from_inventory():
     c.put_potion_into_inventory(HealingItem.POTION)
     c.remove_potion_from_inventory(HealingItem.POTION)
     assert HealingItem.POTION not in c.inventory
+
+    
+# Teste l'utilisation immédiate d'une potion en combat
+def test_use_potion_in_combat():
+    c = Character("salma")
+    c.get_damage(70)
+    c.drink_potion(HealingItem.SUPER_POTION)
+    assert c.hp == 80  # hp devrait remonter à 80 après avoir utilisé une SUPER_POTION
