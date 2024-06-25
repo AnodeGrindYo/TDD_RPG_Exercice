@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 name: Python CI Workflow
+=======
+name: Intégration Continue RPG
+>>>>>>> Stashed changes
 
 on:
   push:
@@ -6,6 +10,7 @@ on:
       - dev
 
 jobs:
+<<<<<<< Updated upstream
   test-and-deploy:
     runs-on: ubuntu-latest
     steps:
@@ -47,3 +52,61 @@ jobs:
           git checkout dev
           git reset --soft HEAD~1
           git push origin dev --force
+=======
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Mise en place de l'environnement de développement
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    
+    - name: Installation des dépendances
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test de l'application
+      run: |
+        pytest
+
+  handle-results:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: dev
+
+    - name: Obtenir l'ID du commit
+      id: get-commit
+      run: echo "::set-output name=sha::$(git rev-parse HEAD)"
+      
+    - name: Définir le nom de la nouvelle branche en cas d'échec
+      id: set-failure-branch-name
+      run: echo "::set-output name=branch::failures/$(date +'%Y-%m-%d-%H-%M-%S')"
+
+    - name: Merge vers main ou création d'une branche d'échec
+      if: ${{ needs.build-and-test.result == 'success' }}
+      run: |
+        git fetch
+        git checkout main
+        git merge ${{ steps.get-commit.outputs.sha }} --no-ff -m "Merge dev into main"
+        git push origin main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Création de la branche d'échec et reset de dev
+      if: ${{ needs.build-and-test.result != 'success' }}
+      run: |
+        git branch ${{ steps.set-failure-branch-name.outputs.branch }} ${{ steps.get-commit.outputs.sha }}
+        git push origin ${{ steps.set-failure-branch-name.outputs.branch }}
+        git reset --hard HEAD~1
+        git push origin dev --force
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+>>>>>>> Stashed changes
