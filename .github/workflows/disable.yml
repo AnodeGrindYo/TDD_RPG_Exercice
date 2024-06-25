@@ -1,8 +1,0 @@
-name: Disable All Workflows
-on: [push, pull_request]
-jobs:
-  noop:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Do nothing
-        run: echo "Workflows are temporarily disabled"
